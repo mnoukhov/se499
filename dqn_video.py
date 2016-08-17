@@ -85,6 +85,7 @@ def _step(a):
     return np.concatenate(frames), reward, env.videos_input.finished, {}
 env._step = _step
 
+
 # Next, we build our model. We use the same model that was described by Mnih et al. (2015).
 model = Sequential()
 model.add(Convolution2D(32, 8, 8, subsample=(4, 4), input_shape=(WINDOW_LENGTH,) + INPUT_SHAPE))

@@ -1,6 +1,10 @@
 #TODO(mnuke)
 # change pops to something that won't fail on video size 0
 # create videoinput for single folder
+# figure out zero divison error
+# add growing/shrinking box actions
+# pre-resize images (or dont)
+# change motion to random number of 1 pixel movements instead of 3?
 
 import glob
 import logging
@@ -38,7 +42,7 @@ class VideoEnv(Env):
         plt.ion()
         plt.show()
         self.bbox_rect = patches.Rectangle((0,0), 0, 0,
-            linewidth=1,edgecolor='r',facecolor='none')
+            linewidth=2,edgecolor='r',facecolor='none')
         self.target_rect = patches.Rectangle((0,0), 0, 0,
             linewidth=1,edgecolor='b',facecolor='none')
         self.axis.add_patch(self.bbox_rect)
@@ -99,6 +103,9 @@ class VideoEnv(Env):
             int(self.target.height))
         plt.draw()
         plt.pause(0.1)
+        plt.savefig('/home/michael/se499/out/{}_{}.png'.format(
+            self.videos_input.cur_video, self.videos_input.cur_frame),
+            bbox_inches='tight')
 
     def _close(self):
         plt.clf()
@@ -183,7 +190,7 @@ class Rectangle(object):
             return float(self.intersect(other)) / self.union(other)
         except ZeroDivisionError:
             logging.error('Zero division \n self: {} \n other: {}'.format(
-                self.area, other.area))
+                self.vertices(), other.vertices()))
             return 0
 
     def values(self):
@@ -203,14 +210,15 @@ class VideosInput:
         self.num_videos = len(self.video_folders)
         self.frame_shape = frame_shape
 
-        self.cur_video = 0
-        self.cur_frame = 0
+        self.cur_video = -1
+        self.cur_frame = -1
         self.finished = False
 
     def get_next_video(self):
         self.cur_video = (self.cur_video + 1)  % self.num_videos
         self.frame_data = self._get_frame_data(
             self.video_folders[self.cur_video])
+        self.cur_frame = -1
         self.finished = False
 
     def get_next_frame(self):
